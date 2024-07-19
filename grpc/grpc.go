@@ -13,6 +13,7 @@ func RegisterGet(port *int64, server func(server *grpc.Server)) {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	//初始化一个grpc
 	s := grpc.NewServer()
 	server(s)
 

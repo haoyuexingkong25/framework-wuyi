@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// mysql的链接
 func MysqlClient(handler func(db *gorm.DB) error) error {
 	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
 		//user, pass, hort, port, dbname,
@@ -31,13 +32,22 @@ func MysqlClient(handler func(db *gorm.DB) error) error {
 	return handler(cli)
 }
 
-func BeginClient() {
-	//dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
-	//	user, pass, hort, port, dbname,
-	//)
-	//db.Begin()
-}
+// 开启事务
+func BeginClient(handle func(db *gorm.DB) error) error {
+	return MysqlClient(func(db *gorm.DB) error {
+		var err error
+		tx := db.Begin()
+		defer func() {
+			if err == nil {
+				fmt.Println("提交")
+				tx.Commit()
+			} else {
+				fmt.Println("回滚")
+				tx.Rollback()
+			}
+		}()
 
-//func ()  {
-//
-//}
+		return handle(tx)
+	})
+
+}
